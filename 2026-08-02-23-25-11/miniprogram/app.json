@@ -1,0 +1,11 @@
+{
+  "pages": ["pages/index/index"],
+  "window": {
+    "navigationBarTitleText": "专业探险 · 游戏化讲解",
+    "navigationBarBackgroundColor": "#4361ee",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#eef4ff"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

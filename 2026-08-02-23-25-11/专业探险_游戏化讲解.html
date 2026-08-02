@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>专业探险 · 游戏化专业讲解</title>
+<style>
+  :root{
+    --bg1:#eef4ff; --bg2:#fef0f5; --card:#ffffff; --ink:#1f2a44;
+    --muted:#6b7896; --line:#e3e9f5; --brand:#4361ee; --brand2:#f72585;
+    --good:#2ec4b6; --warn:#ff9f1c; --shadow:0 10px 30px rgba(40,60,120,.12);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:-apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,sans-serif;
+    color:var(--ink); background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    min-height:100vh;
+  }
+  .wrap{max-width:880px; margin:0 auto; padding:24px 18px 60px}
+  header.top{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px}
+  .logo{font-weight:800; font-size:20px; letter-spacing:.5px}
+  .logo span{color:var(--brand)}
+  .hud{display:flex; gap:10px; font-size:13px; color:var(--muted)}
+  .hud b{color:var(--brand); font-size:15px}
+  .screen{display:none; animation:fade .35s ease}
+  .screen.active{display:block}
+  @keyframes fade{from{opacity:0; transform:translateY(8px)}to{opacity:1; transform:none}}
+  .hero{
+    background:linear-gradient(135deg,#4361ee,#7209b7); color:#fff;
+    border-radius:22px; padding:34px 30px; box-shadow:var(--shadow); position:relative; overflow:hidden;
+  }
+  .hero h1{margin:0 0 10px; font-size:30px}
+  .hero p{margin:0; opacity:.92; line-height:1.7; max-width:560px}
+  .hero .badge{position:absolute; right:-30px; top:-30px; width:160px; height:160px; border-radius:50%;
+    background:rgba(255,255,255,.12); }
+  .btn{
+    display:inline-block; border:none; cursor:pointer; font-size:16px; font-weight:700;
+    padding:13px 26px; border-radius:14px; background:var(--brand); color:#fff;
+    box-shadow:0 8px 18px rgba(67,97,238,.35); transition:transform .12s, box-shadow .12s;
+  }
+  .btn:hover{transform:translateY(-2px); box-shadow:0 12px 24px rgba(67,97,238,.45)}
+  .btn.ghost{background:#fff; color:var(--brand); border:2px solid var(--brand); box-shadow:none}
+  .btn.pink{background:var(--brand2); box-shadow:0 8px 18px rgba(247,37,133,.35)}
+  .mt22{margin-top:22px}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:22px;
+    box-shadow:var(--shadow); margin-top:18px}
+  .step-label{font-size:13px; color:var(--brand); font-weight:700; letter-spacing:1px}
+  .q-title{font-size:21px; font-weight:800; margin:6px 0 18px}
+  .opts{display:grid; gap:12px}
+  .opt{
+    text-align:left; border:2px solid var(--line); background:#fafbff; border-radius:14px;
+    padding:14px 16px; cursor:pointer; font-size:15px; transition:.15s; color:var(--ink);
+  }
+  .opt:hover{border-color:var(--brand); background:#f0f4ff}
+  .opt.sel{border-color:var(--brand); background:#e8eeff; font-weight:700}
+  .opt small{display:block; color:var(--muted); font-weight:400; margin-top:3px}
+  .chip-row{display:flex; flex-wrap:wrap; gap:10px; margin-top:8px}
+  .chip{
+    border:2px solid var(--line); background:#fff; border-radius:999px; padding:9px 16px;
+    cursor:pointer; font-size:14px; user-select:none; transition:.15s;
+  }
+  .chip:hover{border-color:var(--brand2)}
+  .chip.on{background:var(--brand2); color:#fff; border-color:var(--brand2)}
+  .progress{height:8px; background:#e7ecf7; border-radius:999px; overflow:hidden; margin-top:6px}
+  .progress i{display:block; height:100%; background:linear-gradient(90deg,var(--brand),var(--brand2)); width:0; transition:width .3s}
+  .majors{display:grid; gap:14px; margin-top:8px}
+  .major{
+    border:1px solid var(--line); border-radius:16px; padding:16px 18px; background:#fff;
+    display:flex; gap:14px; align-items:flex-start; transition:.15s;
+  }
+  .major:hover{box-shadow:var(--shadow); transform:translateY(-2px)}
+  .mj-icon{width:46px; height:46px; border-radius:12px; flex:none; display:grid; place-items:center;
+    font-size:22px; background:linear-gradient(135deg,#4361ee,#7209b7); color:#fff}
+  .mj-body{flex:1}
+  .mj-name{font-weight:800; font-size:17px}
+  .mj-cat{font-size:12px; color:var(--muted)}
+  .mj-fun{margin:6px 0; line-height:1.6; color:#33405f}
+  .mj-meta{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px}
+  .tag{font-size:12px; background:#eef2ff; color:#3a4a8a; border-radius:8px; padding:3px 9px}
+  .tag.sub{background:#fff1e6; color:#b5651d}
+  .tag.career{background:#e9fbf6; color:#1c8a78}
+  .egg{margin-top:18px; border:1px dashed var(--brand2); border-radius:14px; padding:14px 16px; background:#fff6fb}
+  .egg summary{cursor:pointer; font-weight:700; color:var(--brand2)}
+  .egg p{line-height:1.7; color:#3a2a44; margin:10px 0 0}
+  .codex-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; margin-top:14px}
+  .cx{background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px; text-align:center; cursor:pointer}
+  .cx .e{font-size:26px}
+  .cx .n{font-size:13px; font-weight:700; margin-top:4px}
+  .cx .c{font-size:11px; color:var(--muted)}
+  .center{text-align:center}
+  .foot{margin-top:26px; font-size:12px; color:var(--muted); text-align:center; line-height:1.7}
+  .restit{font-size:14px; color:var(--muted); margin-top:4px}
+  @media (max-width:520px){
+    .wrap{padding:16px 12px 48px}
+    .hero{padding:26px 20px; border-radius:18px}
+    .hero h1{font-size:24px}
+    .hero p{font-size:14px}
+    .card{padding:18px}
+    .q-title{font-size:19px}
+    .opt{padding:12px 14px; font-size:14px}
+    .chip{padding:8px 14px; font-size:13px}
+    .mj-icon{width:40px; height:40px; font-size:19px}
+    .mj-name{font-size:16px}
+    .hud{font-size:12px}
+    .btn{padding:12px 22px; font-size:15px}
+    .codex-grid{grid-template-columns:repeat(auto-fill,minmax(108px,1fr))}
+    .logo{font-size:17px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo">专业<span>探险</span> · 游戏化讲解</div>
+    <div class="hud">图鉴 <b id="hudCodex">0</b> / <b id="hudTotal">0</b></div>
+  </header>
+
+  <!-- 开始 -->
+  <section id="s-start" class="screen active">
+    <div class="hero">
+      <div class="badge"></div>
+      <h1>🎮 你是专业探险家</h1>
+      <p>高考填志愿，先搞懂"专业"到底是什么。闯过 3 关，解锁你的专属专业地图，顺便把"专业 vs 专题"这个坑填平。全程 3 分钟，边玩边懂。</p>
+      <div class="mt22"><button class="btn pink" onclick="go('s-subject')">开始探险 →</button></div>
+    </div>
+    <div class="card">
+      <div class="step-label">玩法一览</div>
+      <p class="q-title" style="margin-top:6px">三关 + 一个彩蛋</p>
+      <div class="opts">
+        <div class="opt">🧭 第 1 关 · 选科探路<small>选你的"3+1+2"，系统告诉你哪些专业大陆向你敞开</small></div>
+        <div class="opt">🧠 第 2 关 · 天赋试炼<small>5 道趣味题，测出你偏向的能力维度（呼应皮纹天赋）</small></div>
+        <div class="opt">🗺️ 第 3 关 · 专业匹配<small>综合选科+天赋，生成你的 TOP5 专业推荐，收入图鉴</small></div>
+        <div class="opt">🥚 隐藏彩蛋 · 专业 vs 专题<small>填志愿认专业，别把"专题课"当专业填</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 第1关 选科 -->
+  <section id="s-subject" class="screen">
+    <div class="card">
+      <div class="step-label">第 1 关 · 选科探路</div>
+      <p class="q-title">你的"首选"科目是？</p>
+      <div class="chip-row" id="preferRow">
+        <div class="chip" data-p="物理">物理</div>
+        <div class="chip" data-p="历史">历史</div>
+      </div>
+      <p class="q-title" style="margin-top:18px">再选 2 门（可少选，影响可报范围）</p>
+      <div class="chip-row" id="reelectRow">
+        <div class="chip" data-r="化学">化学</div>
+        <div class="chip" data-r="生物">生物</div>
+        <div class="chip" data-r="政治">政治</div>
+        <div class="chip" data-r="地理">地理</div>
+      </div>
+      <div class="mt22"><button class="btn" id="subjNext" disabled onclick="afterSubject()">下一步 →</button></div>
+    </div>
+  </section>
+
+  <!-- 第2关 天赋 -->
+  <section id="s-talent" class="screen">
+    <div class="card">
+      <div class="step-label" id="tStep">第 2 关 · 天赋试炼（1/5）</div>
+      <div class="progress"><i id="tBar"></i></div>
+      <p class="q-title" id="tQ">题目加载中…</p>
+      <div class="opts" id="tOpts"></div>
+    </div>
+  </section>
+
+  <!-- 第3关 结果 -->
+  <section id="s-result" class="screen">
+    <div class="card">
+      <div class="step-label">第 3 关 · 专业匹配</div>
+      <p class="q-title" id="resTitle">为你解锁的专业地图</p>
+      <p class="restit" id="resSub"></p>
+      <div class="majors" id="resList"></div>
+
+      <details class="egg">
+        <summary>🥚 彩蛋：专业 vs 专题，到底差在哪？</summary>
+        <p><b>专业</b>是教育部目录里正式注册的培养单元（有代码 080901、发学位证、4年培养方案），填志愿系统里认的就是它。<br>
+        <b>专题</b>是学校/机构围绕某点开的短期模块（先修营、专题课、突破班），没有目录、没有学位。<br>
+        👉 给学生一句话：<b>填志愿认专业，别把专题当专业填。</b></p>
+      </details>
+
+      <div class="mt22 center">
+        <button class="btn ghost" onclick="go('s-codex')">📖 查看图鉴</button>
+        <button class="btn" onclick="resetAll()">🔄 再玩一次</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 图鉴 -->
+  <section id="s-codex" class="screen">
+    <div class="card">
+      <div class="step-label">专业图鉴</div>
+      <p class="q-title">你收集到的专业（<span id="cxCount">0</span> 个）</p>
+      <div class="codex-grid" id="codexGrid"></div>
+      <div class="mt22 center"><button class="btn" onclick="go('s-start')">返回首页</button></div>
+    </div>
+  </section>
+
+  <p class="foot">本原型用于志愿规划讲座/咨询场景演示 · 数据为 13 大学科门类代表专业（简化）· 选科与天赋模型为教学示意</p>
+</div>
+
+<script>
+/* ---------- 数据：13大门类代表专业 ---------- */
+const MAJORS = [
+  // 哲学
+  {cat:"哲学", name:"哲学", icon:"🧭", fun:"追问世界本质与人类意义，训练极强的思辨与表达。", careers:["高校教师","智库研究员","公务员"], sub:["历史"], tags:["language","logic"]},
+  {cat:"哲学", name:"逻辑学", icon:"♟️", fun:"研究推理规则，像给思维装上了编译器。", careers:["数据分析","法律顾问","AI训练"], sub:["物理"], tags:["logic","language"]},
+  // 经济学
+  {cat:"经济学", name:"经济学", icon:"📈", fun:"用模型和数理解释钱与人怎么决策。", careers:["券商研究","银行","政策分析"], sub:["物理"], tags:["logic","biz"]},
+  {cat:"经济学", name:"金融学", icon:"💰", fun:"资金的搬运与增值游戏，离钱最近的专业之一。", careers:["投行","基金","风控"], sub:["物理"], tags:["biz","logic"]},
+  {cat:"经济学", name:"国际经济与贸易", icon:"🌏", fun:"看懂全球买卖，语言+商科双修。", careers:["外贸","跨境电商","报关"], sub:["不限"], tags:["language","biz"]},
+  // 法学
+  {cat:"法学", name:"法学", icon:"⚖️", fun:"背法条更练逻辑，法庭上见真章。", careers:["律师","法官","法务"], sub:["历史"], tags:["language","logic"]},
+  {cat:"法学", name:"社会学", icon:"👥", fun:"用科学方法研究人群与社会运行规律。", careers:["调研","NGO","市场研究"], sub:["历史"], tags:["social","care"]},
+  // 教育学
+  {cat:"教育学", name:"学前教育", icon:"🧸", fun:"研究 0-6 岁怎么玩着学，爱心与耐心并重。", careers:["幼教","早教研发","托育"], sub:["历史"], tags:["care","social"]},
+  {cat:"教育学", name:"体育教育", icon:"🏀", fun:"把运动变成专业，身体就是你的实验室。", careers:["体育老师","教练","康复"], sub:["不限"], tags:["hands","care"]},
+  // 文学
+  {cat:"文学", name:"汉语言文学", icon:"📜", fun:"读写天下的文字，文案与公考的硬通货。", careers:["编辑","文案","公务员"], sub:["历史"], tags:["language","art"]},
+  {cat:"文学", name:"英语", icon:"🔤", fun:"一门语言打通世界，翻译/外事/外贸都吃香。", careers:["翻译","外贸","外事"], sub:["历史"], tags:["language","social"]},
+  {cat:"文学", name:"新闻学", icon:"📰", fun:"用事实讲故事，记录时代也制造流量。", careers:["记者","新媒体","公关"], sub:["历史"], tags:["language","social"]},
+  // 历史学
+  {cat:"历史学", name:"历史学", icon:"🏺", fun:"在故纸堆里拼出人类的时间线。", careers:["文博","档案","教研"], sub:["历史"], tags:["language","nature"]},
+  {cat:"历史学", name:"考古学", icon:"⛏️", fun:"田野与实验室双线作战，亲手挖出历史。", careers:["考古所","文博","文保"], sub:["历史","地理"], tags:["hands","nature"]},
+  // 理学
+  {cat:"理学", name:"数学与应用数学", icon:"🔢", fun:"一切科学的语言，逻辑训练拉满。", careers:["量化","精算","教师"], sub:["物理","化学"], tags:["logic"]},
+  {cat:"理学", name:"物理学", icon:"🔭", fun:"追问宇宙最基本的规律。", careers:["科研","芯片","教师"], sub:["物理","化学"], tags:["logic","nature"]},
+  {cat:"理学", name:"化学", icon:"🧪", fun:"在分子层面玩组装与变化。", careers:["制药","材料","检测"], sub:["物理","化学"], tags:["nature","hands"]},
+  {cat:"理学", name:"生物科学", icon:"🧬", fun:"从细胞到生态，解码生命。", careers:["生物研发","法医","教师"], sub:["物理","化学","生物"], tags:["nature","hands"]},
+  // 工学
+  {cat:"工学", name:"计算机科学与技术", icon:"💻", fun:"写代码让机器听话，就业面最广的工科。", careers:["开发","算法","架构"], sub:["物理","化学"], tags:["logic","hands"]},
+  {cat:"工学", name:"电子信息工程", icon:"📡", fun:"软硬件通吃，造芯片做通信。", careers:["硬件","通信","嵌入式"], sub:["物理","化学"], tags:["hands","logic"]},
+  {cat:"工学", name:"机械工程", icon:"⚙️", fun:"设计会动的everything，制造业的脊梁。", careers:["机械设计","自动化","车企"], sub:["物理","化学"], tags:["hands","logic"]},
+  {cat:"工学", name:"土木工程", icon:"🏗️", fun:"把图纸变成能站百年的建筑。", careers:["结构设计","施工","造价"], sub:["物理","化学"], tags:["hands","nature"]},
+  // 农学
+  {cat:"农学", name:"农学", icon:"🌾", fun:"让土地更高产更健康，粮食安全守门人。", careers:["农技","种业","植保"], sub:["物理","化学","生物"], tags:["nature","hands"]},
+  {cat:"农学", name:"动物医学", icon:"🐾", fun:"给动物看病，宠物经济大热。", careers:["宠物医生","兽医","检疫"], sub:["物理","化学","生物"], tags:["care","hands"]},
+  {cat:"农学", name:"园艺", icon:"🌿", fun:"种花种果种景观，治愈系工科。", careers:["园林","花艺","农业园"], sub:["物理","化学","生物"], tags:["nature","art"]},
+  // 医学
+  {cat:"医学", name:"临床医学", icon:"🩺", fun:"五年起步，救人于分秒之间。", careers:["医生","医学研究"], sub:["物理","化学","生物"], tags:["care","nature"]},
+  {cat:"医学", name:"口腔医学", icon:"🦷", fun:"小而精的医学方向，就业口碑好。", careers:["口腔医生","正畸"], sub:["物理","化学","生物"], tags:["hands","care"]},
+  {cat:"医学", name:"护理学", icon:"💉", fun:"医疗体系里的守护者，需求长期旺盛。", careers:["护士","健康管理"], sub:["不限"], tags:["care","social"]},
+  {cat:"医学", name:"药学", icon:"💊", fun:"研发与生产治病救人的药。", careers:["药企研发","药房","监管"], sub:["物理","化学","生物"], tags:["nature","logic"]},
+  // 管理学
+  {cat:"管理学", name:"工商管理", icon:"📊", fun:"搞懂一家企业怎么运转。", careers:["管培生","运营","创业"], sub:["不限"], tags:["biz","social"]},
+  {cat:"管理学", name:"会计学", icon:"🧾", fun:"数字里的真相，越老越吃香。", careers:["会计师","审计","财务"], sub:["不限"], tags:["logic","biz"]},
+  {cat:"管理学", name:"市场营销", icon:"📣", fun:"把对的产品卖给对的人。", careers:["品牌","电商","策划"], sub:["不限"], tags:["social","biz"]},
+  // 艺术学
+  {cat:"艺术学", name:"视觉传达设计", icon:"🎨", fun:"用画面说话，品牌与界面的美容师。", careers:["设计师","品牌","UI"], sub:["不限"], tags:["art","social"]},
+  {cat:"艺术学", name:"音乐表演", icon:"🎻", fun:"把情感练成技艺，舞台即世界。", careers:["演奏","教培","编曲"], sub:["不限"], tags:["art","care"]},
+  {cat:"艺术学", name:"动画", icon:"🖌️", fun:"让笔下的角色活过来。", careers:["原画","动画","游戏美术"], sub:["不限"], tags:["art","hands"]},
+];
+
+/* ---------- 天赋试炼题库 ---------- */
+const TALENT = [
+  {q:"自习课终于写完了作业，剩下的时间你最想？",
+   o:[{t:"再找几道难题刷一刷",tags:["logic"]},{t:"偷偷看会儿小说 / 漫画",tags:["language"]},{t:"折纸、转笔、鼓捣文具",tags:["hands"]},{t:"跟同桌唠嗑、串座位",tags:["social"]}]},
+  {q:"大扫除 / 班级活动，你通常抢着干哪样？",
+   o:[{t:"擦窗、搬桌、排桌椅",tags:["hands"]},{t:"写通知、做 PPT、写稿",tags:["language"]},{t:"张罗分工、调解谁跟谁一组",tags:["social"]},{t:"核对名单数据，保证不出错",tags:["logic"]}]},
+  {q:"周末拿到零花钱，你更可能？",
+   o:[{t:"攒着买教辅 / 存起来",tags:["logic"]},{t:"买手账胶带、好看的周边",tags:["art"]},{t:"请好朋友喝奶茶",tags:["social"]},{t:"比价凑满减，花得最划算",tags:["biz"]}]},
+  {q:"你手机相册 / 笔记本里最多的是？",
+   o:[{t:"截图的学习资料、错题",tags:["logic"]},{t:"拍的风景、猫、好看的图",tags:["nature"]},{t:"和朋友的合照、表情包",tags:["social"]},{t:"自己做的手账、手工美图",tags:["art"]}]},
+  {q:"小组作业 / 班级任务，你抢着做哪块？",
+   o:[{t:"写稿、查资料",tags:["language"]},{t:"做 PPT、排版美化",tags:["art"]},{t:"上台讲、控场",tags:["social"]},{t:"给组员讲题、帮落后的同学",tags:["care"]}]},
+];
+
+/* ---------- 状态 ---------- */
+const state = { prefer:null, reelect:[], tagScore:{}, ti:0, codex:loadCodex() };
+const TAGNAME = {logic:"逻辑分析",language:"语言文笔",hands:"动手操作",social:"人际沟通",care:"助人关怀",nature:"观察自然",art:"艺术创意",biz:"商业经营"};
+
+/* ---------- 工具 ---------- */
+function go(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); window.scrollTo(0,0); }
+function loadCodex(){ try{ return JSON.parse(localStorage.getItem('major_codex')||'[]'); }catch(e){ return []; } }
+function saveCodex(){ localStorage.setItem('major_codex', JSON.stringify(state.codex)); refreshHud(); }
+function refreshHud(){ document.getElementById('hudCodex').textContent=state.codex.length; document.getElementById('hudTotal').textContent=MAJORS.length; }
+
+/* ---------- 第1关 选科 ---------- */
+document.getElementById('preferRow').addEventListener('click', e=>{
+  const c=e.target.closest('.chip'); if(!c) return;
+  document.querySelectorAll('#preferRow .chip').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on'); state.prefer=c.dataset.p; checkSubj();
+});
+document.getElementById('reelectRow').addEventListener('click', e=>{
+  const c=e.target.closest('.chip'); if(!c) return;
+  c.classList.toggle('on');
+  const r=c.dataset.r; const i=state.reelect.indexOf(r);
+  if(i>=0) state.reelect.splice(i,1); else state.reelect.push(r);
+  checkSubj();
+});
+function checkSubj(){ document.getElementById('subjNext').disabled = !state.prefer; }
+
+function eligible(m){
+  const s=m.sub;
+  if(s.includes("不限")) return true;
+  if(s[0]==="物理"||s[0]==="历史"){ if(state.prefer!==s[0]) return false; }
+  const need=s.slice((s[0]==="物理"||s[0]==="历史")?1:0);
+  for(const c of need){ if(!state.reelect.includes(c)) return false; }
+  return true;
+}
+
+function afterSubject(){
+  state.ti=0; state.tagScore={};
+  showTalent();
+  go('s-talent');
+}
+
+/* ---------- 第2关 天赋 ---------- */
+function showTalent(){
+  const t=TALENT[state.ti];
+  document.getElementById('tStep').textContent=`第 2 关 · 天赋试炼（${state.ti+1}/${TALENT.length}）`;
+  document.getElementById('tBar').style.width=((state.ti)/TALENT.length*100)+'%';
+  document.getElementById('tQ').textContent=t.q;
+  const box=document.getElementById('tOpts'); box.innerHTML='';
+  t.o.forEach((opt,idx)=>{
+    const b=document.createElement('button');
+    b.className='opt';
+    b.innerHTML=`${opt.t} <small>+ ${opt.tags.map(x=>TAGNAME[x]).join(' / ')}</small>`;
+    b.onclick=()=>{ opt.tags.forEach(x=>state.tagScore[x]=(state.tagScore[x]||0)+1); nextTalent(); };
+    box.appendChild(b);
+  });
+}
+function nextTalent(){
+  state.ti++;
+  if(state.ti<TALENT.length){ showTalent(); }
+  else { document.getElementById('tBar').style.width='100%'; computeResult(); go('s-result'); }
+}
+
+/* ---------- 第3关 匹配 ---------- */
+function computeResult(){
+  const pool=MAJORS.filter(eligible);
+  const scored=pool.map(m=>{
+    let s=0; m.tags.forEach(t=> s += (state.tagScore[t]||0));
+    return {m, s};
+  }).sort((a,b)=> b.s-a.s);
+  let top = scored.filter(x=>x.s>0).slice(0,5);
+  if(top.length<5) top = scored.slice(0,5); // 选科过窄时兜底展示
+  // 图鉴收集
+  top.forEach(x=>{ if(!state.codex.includes(x.m.name)) state.codex.push(x.m.name); });
+  saveCodex();
+
+  const subText = pool.length>=MAJORS.length
+    ? `当前选科可报全部 ${MAJORS.length} 个代表专业，下面按你的天赋匹配排序：`
+    : `当前选科「${state.prefer}+${state.reelect.join('/')||'无'}」可报 ${pool.length} 个代表专业，下面按你的天赋匹配 TOP5：`;
+  document.getElementById('resSub').textContent=subText;
+
+  const list=document.getElementById('resList'); list.innerHTML='';
+  top.forEach((x,i)=>{
+    const m=x.m;
+    const el=document.createElement('div'); el.className='major';
+    el.innerHTML=`
+      <div class="mj-icon">${m.icon}</div>
+      <div class="mj-body">
+        <div class="mj-name">${i+1}. ${m.name}</div>
+        <div class="mj-cat">${m.cat} 门类</div>
+        <div class="mj-fun">${m.fun}</div>
+        <div class="mj-meta">
+          <span class="tag sub">选科：${m.sub.join('+')}</span>
+          <span class="tag career">职业：${m.careers.join('、')}</span>
+          <span class="tag">天赋：${m.tags.map(t=>TAGNAME[t]).join('、')}</span>
+        </div>
+      </div>`;
+    list.appendChild(el);
+  });
+  refreshHud();
+}
+
+/* ---------- 图鉴 ---------- */
+function renderCodex(){
+  document.getElementById('cxCount').textContent=state.codex.length;
+  const grid=document.getElementById('codexGrid'); grid.innerHTML='';
+  MAJORS.forEach(m=>{
+    const got=state.codex.includes(m.name);
+    const d=document.createElement('div'); d.className='cx';
+    d.style.opacity = got?1:.35;
+    d.innerHTML=`<div class="e">${got?m.icon:'❔'}</div><div class="n">${got?m.name:'未解锁'}</div><div class="c">${m.cat}</div>`;
+    grid.appendChild(d);
+  });
+}
+document.getElementById('s-codex').addEventListener('click', renderCodex);
+
+/* ---------- 重置 ---------- */
+function resetAll(){
+  state.prefer=null; state.reelect=[]; state.tagScore={}; state.ti=0;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  document.getElementById('subjNext').disabled=true;
+  go('s-start');
+}
+
+refreshHud();
+</script>
+</body>
+</html>

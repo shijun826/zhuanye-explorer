@@ -1,0 +1,107 @@
+<view class="wrap">
+  <view class="top">
+    <view class="logo">专业<text class="hl">探险</text> · 游戏化讲解</view>
+    <view class="hud">图鉴 <text class="b">{{hudCodex}}</text> / <text class="b">{{hudTotal}}</text></view>
+  </view>
+
+  <view wx:if="{{screen==='start'}}" class="screen">
+    <view class="hero">
+      <view class="badge"></view>
+      <view class="h1">🎮 你是专业探险家</view>
+      <view class="p">高考填志愿，先搞懂"专业"到底是什么。闯过 3 关，解锁你的专属专业地图，顺便把"专业 vs 专题"这个坑填平。全程 3 分钟，边玩边懂。</view>
+      <view class="mt22"><button class="btn pink" bindtap="go" data-screen="subject">开始探险 →</button></view>
+    </view>
+    <view class="card">
+      <view class="step-label">玩法一览</view>
+      <view class="q-title">三关 + 一个彩蛋</view>
+      <view class="opts">
+        <view class="opt">🧭 第 1 关 · 选科探路<view class="small">选你的"3+1+2"，系统告诉你哪些专业大陆向你敞开</view></view>
+        <view class="opt">🧠 第 2 关 · 天赋试炼<view class="small">5 道趣味题，测出你偏向的能力维度（呼应皮纹天赋）</view></view>
+        <view class="opt">🗺️ 第 3 关 · 专业匹配<view class="small">综合选科+天赋，生成你的 TOP5 专业推荐，收入图鉴</view></view>
+        <view class="opt">🥚 隐藏彩蛋 · 专业 vs 专题<view class="small">填志愿认专业，别把专题课当专业填</view></view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{screen==='subject'}}" class="screen">
+    <view class="card">
+      <view class="step-label">第 1 关 · 选科探路</view>
+      <view class="q-title">你的"首选"科目是？</view>
+      <view class="chip-row">
+        <view class="chip {{prefer==='物理'?'on':''}}" bindtap="choosePrefer" data-p="物理">物理</view>
+        <view class="chip {{prefer==='历史'?'on':''}}" bindtap="choosePrefer" data-p="历史">历史</view>
+      </view>
+      <view class="q-title" style="margin-top:36rpx">再选 2 门（可少选，影响可报范围）</view>
+      <view class="chip-row">
+        <view wx:for="{{subjectReelect}}" wx:key="name" class="chip {{item.on?'on':''}}" bindtap="toggleReelect" data-r="{{item.name}}">{{item.name}}</view>
+      </view>
+      <view class="mt22"><button class="btn" disabled="{{!prefer}}" bindtap="afterSubject">下一步 →</button></view>
+    </view>
+  </view>
+
+  <view wx:if="{{screen==='talent'}}" class="screen">
+    <view class="card">
+      <view class="step-label">{{tStep}}</view>
+      <view class="progress"><view class="bar" style="width:{{tBar}}%"></view></view>
+      <view class="q-title">{{tQ}}</view>
+      <view class="opts">
+        <view wx:for="{{tOpts}}" wx:key="t" class="opt" bindtap="chooseTalent" data-index="{{index}}">
+          {{item.t}}
+          <view class="small">+ {{item.tagNames}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{screen==='result'}}" class="screen">
+    <view class="card">
+      <view class="step-label">第 3 关 · 专业匹配</view>
+      <view class="q-title">为你解锁的专业地图</view>
+      <view class="restit">{{resSub}}</view>
+      <view class="majors">
+        <view wx:for="{{resList}}" wx:key="name" class="major">
+          <view class="mj-icon">{{item.icon}}</view>
+          <view class="mj-body">
+            <view class="mj-name">{{item.rank}}. {{item.name}}</view>
+            <view class="mj-cat">{{item.cat}} 门类</view>
+            <view class="mj-fun">{{item.fun}}</view>
+            <view class="mj-meta">
+              <text class="tag sub">选科：{{item.sub}}</text>
+              <text class="tag career">职业：{{item.careers}}</text>
+              <text class="tag">天赋：{{item.tags}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="egg">
+        <view class="egg-title">🥚 彩蛋：专业 vs 专题，到底差在哪？</view>
+        <view class="egg-body"><text class="b">专业</text>是教育部目录里正式注册的培养单元（有代码 080901、发学位证、4年培养方案），填志愿系统里认的就是它。
+<text class="b">专题</text>是学校/机构围绕某点开的短期模块（先修营、专题课、突破班），没有目录、没有学位。
+👉 给学生一句话：<text class="b">填志愿认专业，别把专题当专业填。</text></view>
+      </view>
+
+      <view class="mt22 center">
+        <button class="btn ghost" bindtap="renderCodex">📖 查看图鉴</button>
+        <button class="btn" bindtap="resetAll">🔄 再玩一次</button>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{screen==='codex'}}" class="screen">
+    <view class="card">
+      <view class="step-label">专业图鉴</view>
+      <view class="q-title">你收集到的专业（{{codexCount}} 个）</view>
+      <view class="codex-grid">
+        <view wx:for="{{codexList}}" wx:key="key" class="cx" style="opacity:{{item.got?1:0.35}}">
+          <view class="e">{{item.icon}}</view>
+          <view class="n">{{item.name}}</view>
+          <view class="c">{{item.cat}}</view>
+        </view>
+      </view>
+      <view class="mt22 center"><button class="btn" bindtap="go" data-screen="start">返回首页</button></view>
+    </view>
+  </view>
+
+  <view class="foot">本原型用于志愿规划讲座/咨询场景演示 · 数据为 13 大学科门类代表专业（简化）</view>
+</view>
